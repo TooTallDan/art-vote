@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Art Vote - Round 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1a1a1a;
+            --card: #252525;
+            --accent: #c9a55a;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --danger: #e74c3c;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 140px);
+            padding: 20px;
+        }
+
+        .card-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 70vh;
+            max-height: 500px;
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            cursor: grab;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            user-select: none;
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card.swiping {
+            transition: none;
+        }
+
+        .card.swipe-left {
+            transform: translateX(-150%) rotate(-30deg);
+            opacity: 0;
+        }
+
+        .card.swipe-right {
+            transform: translateX(150%) rotate(30deg);
+            opacity: 0;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 75%;
+            object-fit: contain;
+            background: #1a1a1a;
+            pointer-events: none;
+        }
+
+        .card-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .card-number {
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .swipe-hint {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .swipe-indicator.pass {
+            left: 20px;
+            background: var(--danger);
+            color: white;
+        }
+
+        .swipe-indicator.like {
+            right: 20px;
+            background: var(--success);
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn.pass {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .control-btn.pass:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .control-btn.like {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .control-btn.like:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .control-btn.undo {
+            border-color: var(--accent);
+            color: var(--accent);
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+
+        .control-btn.undo:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Results screen */
+        .results {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results h2 {
+            color: var(--accent);
+            font-weight: 300;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .results-stats {
+            color: var(--text-dim);
+            margin-bottom: 30px;
+        }
+
+        .code-container {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .code-label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .code-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            max-height: 150px;
+            overflow-y: auto;
+            color: var(--text);
+            text-align: left;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(201, 165, 90, 0.3);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .copied-msg {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copied-msg.show {
+            opacity: 1;
+        }
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 500px) {
+            .card-container {
+                height: 60vh;
+            }
+            .keyboard-hint {
+                display: none;
+            }
+        }
+
+        /* Intro screen */
+        .intro {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .intro h2 {
+            color: var(--accent);
+            font-weight: 300;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .intro p {
+            color: var(--text-dim);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .intro-instructions {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .intro-instructions div {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 12px 0;
+        }
+
+        .intro-instructions span.icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .name-input {
+            background: #333;
+            border: 1px solid #555;
+            color: var(--text);
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 280px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ART VOTE</h1>
+        <p class="subtitle">Round 1: Approve or Pass</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <p class="progress-text" id="progressText">0 / 47</p>
+    </header>
+
+    <div class="container">
+        <!-- Intro Screen -->
+        <div class="intro" id="introScreen">
+            <h2>Welcome, Voter!</h2>
+            <p>You'll see 47 artworks. For each one, decide if you'd want it in the house.</p>
+
+            <div class="intro-instructions">
+                <div>
+                    <span class="icon">👈</span>
+                    <span><strong>Swipe Left / Press ←</strong> — Pass</span>
+                </div>
+                <div>
+                    <span class="icon">👉</span>
+                    <span><strong>Swipe Right / Press →</strong> — Approve</span>
+                </div>
+                <div>
+                    <span class="icon">↩️</span>
+                    <span><strong>Press Z</strong> — Undo last choice</span>
+                </div>
+            </div>
+
+            <p>Enter your name to begin:</p>
+            <input type="text" class="name-input" id="voterName" placeholder="Your name" maxlength="20">
+            <br>
+            <button class="btn" onclick="startVoting()">Start Voting</button>
+        </div>
+
+        <!-- Voting Screen -->
+        <div id="votingScreen" style="display: none; width: 100%;">
+            <div class="card-container" id="cardContainer">
+                <div class="card" id="currentCard">
+                    <span class="swipe-indicator pass">PASS</span>
+                    <span class="swipe-indicator like">APPROVE</span>
+                    <img class="card-image" id="cardImage" src="" alt="Artwork">
+                    <div class="card-info">
+                        <span class="card-number" id="cardNumber">Art #1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swipe-hint">
+                <span>← Pass</span>
+                <span>Approve →</span>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn undo" id="undoBtn" onclick="undo()" disabled title="Undo (Z)">↩</button>
+                <button class="control-btn pass" onclick="vote(false)" title="Pass (←)">✕</button>
+                <button class="control-btn like" onclick="vote(true)" title="Approve (→)">✓</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results" id="resultsScreen">
+            <h2>Voting Complete!</h2>
+            <p class="results-stats" id="resultsStats"></p>
+
+            <div class="code-container">
+                <p class="code-label">Your voting code (send this to the organizer):</p>
+                <div class="code-box" id="codeBox"></div>
+            </div>
+
+            <button class="btn" onclick="copyCode()">Copy Code</button>
+            <button class="btn secondary" onclick="restart()">Start Over</button>
+
+            <p class="copied-msg" id="copiedMsg">Copied to clipboard!</p>
+        </div>
+    </div>
+
+    <div class="keyboard-hint">Keyboard: ← Pass · → Approve · Z Undo</div>
+
+    <script>
+        // Configuration
+        const TOTAL_ARTWORKS = 47;
+        const IMAGE_PATH = 'images/';
+
+        // Build image list (handle both .jpg and .png)
+        const artworks = [];
+        const imageExtensions = {
+            1: 'png', 21: 'png', 22: 'png', 23: 'png', 24: 'png', 25: 'png',
+            26: 'png', 27: 'png', 28: 'png', 29: 'png', 30: 'png', 31: 'png',
+            32: 'png', 35: 'png', 42: 'png', 43: 'png'
+        };
+
+        for (let i = 1; i <= TOTAL_ARTWORKS; i++) {
+            const ext = imageExtensions[i] || 'jpg';
+            artworks.push({
+                id: i,
+                filename: `art${String(i).padStart(2, '0')}.${ext}`
+            });
+        }
+
+        // State
+        let currentIndex = 0;
+        let votes = {}; // { artId: true/false }
+        let history = []; // For undo
+        let voterName = '';
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+
+        // DOM elements
+        const card = document.getElementById('currentCard');
+        const cardImage = document.getElementById('cardImage');
+        const cardNumber = document.getElementById('cardNumber');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const undoBtn = document.getElementById('undoBtn');
+        const passIndicator = card.querySelector('.swipe-indicator.pass');
+        const likeIndicator = card.querySelector('.swipe-indicator.like');
+
+        function startVoting() {
+            const nameInput = document.getElementById('voterName');
+            voterName = nameInput.value.trim() || 'Anonymous';
+
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('votingScreen').style.display = 'block';
+
+            loadCard();
+        }
+
+        function loadCard() {
+            if (currentIndex >= artworks.length) {
+                showResults();
+                return;
+            }
+
+            const art = artworks[currentIndex];
+            cardImage.src = IMAGE_PATH + art.filename;
+            cardNumber.textContent = `Art #${art.id}`;
+
+            // Reset card position
+            card.style.transform = '';
+            card.classList.remove('swipe-left', 'swipe-right', 'swiping');
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percent = (currentIndex / artworks.length) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `${currentIndex} / ${artworks.length}`;
+            undoBtn.disabled = history.length === 0;
+        }
+
+        function vote(approved) {
+            const art = artworks[currentIndex];
+
+            // Save to history for undo
+            history.push({ index: currentIndex, artId: art.id });
+
+            // Record vote
+            votes[art.id] = approved;
+
+            // Animate
+            card.classList.add(approved ? 'swipe-right' : 'swipe-left');
+
+            // Next card
+            setTimeout(() => {
+                currentIndex++;
+                loadCard();
+            }, 300);
+        }
+
+        function undo() {
+            if (history.length === 0) return;
+
+            const last = history.pop();
+            delete votes[last.artId];
+            currentIndex = last.index;
+            loadCard();
+        }
+
+        function showResults() {
+            document.getElementById('votingScreen').style.display = 'none';
+            document.getElementById('resultsScreen').classList.add('show');
+
+            const approved = Object.values(votes).filter(v => v).length;
+            const passed = Object.values(votes).filter(v => !v).length;
+
+            document.getElementById('resultsStats').textContent =
+                `${voterName} approved ${approved} artworks and passed on ${passed}.`;
+
+            // Generate code
+            const data = {
+                v: 1, // version
+                n: voterName,
+                a: Object.entries(votes)
+                    .filter(([id, approved]) => approved)
+                    .map(([id]) => parseInt(id))
+            };
+
+            const code = btoa(JSON.stringify(data));
+            document.getElementById('codeBox').textContent = code;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeBox').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const msg = document.getElementById('copiedMsg');
+                msg.classList.add('show');
+                setTimeout(() => msg.classList.remove('show'), 2000);
+            });
+        }
+
+        function restart() {
+            currentIndex = 0;
+            votes = {};
+            history = [];
+            document.getElementById('resultsScreen').classList.remove('show');
+            document.getElementById('introScreen').style.display = 'block';
+            document.getElementById('votingScreen').style.display = 'none';
+            updateProgress();
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('votingScreen').style.display === 'none') {
+                if (e.key === 'Enter') startVoting();
+                return;
+            }
+
+            if (e.key === 'ArrowLeft') vote(false);
+            else if (e.key === 'ArrowRight') vote(true);
+            else if (e.key === 'z' || e.key === 'Z') undo();
+        });
+
+        // Touch/drag controls
+        card.addEventListener('mousedown', dragStart);
+        card.addEventListener('touchstart', dragStart, { passive: true });
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: true });
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+
+        function dragStart(e) {
+            if (document.getElementById('votingScreen').style.display === 'none') return;
+            isDragging = true;
+            startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+            card.classList.add('swiping');
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+            const diff = currentX - startX;
+            const rotation = diff * 0.1;
+
+            card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
+
+            // Show indicators
+            if (diff < -50) {
+                passIndicator.style.opacity = Math.min(1, Math.abs(diff) / 100);
+                likeIndicator.style.opacity = 0;
+            } else if (diff > 50) {
+                likeIndicator.style.opacity = Math.min(1, diff / 100);
+                passIndicator.style.opacity = 0;
+            } else {
+                passIndicator.style.opacity = 0;
+                likeIndicator.style.opacity = 0;
+            }
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            card.classList.remove('swiping');
+
+            const diff = currentX - startX;
+
+            passIndicator.style.opacity = 0;
+            likeIndicator.style.opacity = 0;
+
+            if (diff < -100) {
+                vote(false);
+            } else if (diff > 100) {
+                vote(true);
+            } else {
+                card.style.transform = '';
+            }
+
+            startX = 0;
+            currentX = 0;
+        }
+
+        // Preload images
+        artworks.forEach(art => {
+            const img = new Image();
+            img.src = IMAGE_PATH + art.filename;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Vote - Round 2 Final</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1a1a1a;
+            --card: #252525;
+            --accent: #c9a55a;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --danger: #e74c3c;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Config section */
+        .config-section {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-section h2 {
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .config-section p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .config-row input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: var(--text);
+            padding: 10px 15px;
+            font-size: 0.85rem;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .config-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(201, 165, 90, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.small {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+
+        /* Intro */
+        .intro {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .intro h2 {
+            color: var(--accent);
+            font-weight: 300;
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .intro p {
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .name-input {
+            background: #333;
+            border: 1px solid #555;
+            color: var(--text);
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 280px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Voting UI */
+        .voting-section {
+            display: none;
+        }
+
+        .voting-section.show {
+            display: block;
+        }
+
+        .picks-display {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 80px;
+            z-index: 50;
+        }
+
+        .picks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .picks-header h3 {
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 1rem;
+        }
+
+        .picks-slots {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pick-slot {
+            width: 60px;
+            height: 70px;
+            background: #1a1a1a;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .pick-slot.filled {
+            border-style: solid;
+            border-color: var(--accent);
+        }
+
+        .pick-slot .rank {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: var(--accent);
+            color: var(--bg);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pick-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .pick-slot .points {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .pick-slot .remove-pick {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        .pick-slot.filled .remove-pick {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-section h3 {
+            color: var(--text-dim);
+            font-weight: 400;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .art-card {
+            background: var(--card);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .art-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .art-card.selected {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .art-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: var(--accent);
+        }
+
+        .art-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: contain;
+            background: #1a1a1a;
+        }
+
+        .art-card-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .art-card-id {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .submit-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-section h2 {
+            color: var(--accent);
+            font-weight: 300;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .results-stats {
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .your-picks {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .your-picks .pick-item {
+            text-align: center;
+        }
+
+        .your-picks .pick-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            background: var(--card);
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+        }
+
+        .your-picks .pick-item .label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 5px;
+        }
+
+        .code-container {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .code-label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .code-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            color: var(--text);
+            text-align: left;
+        }
+
+        .copied-msg {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copied-msg.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .pick-slot {
+                width: 50px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ART VOTE</h1>
+        <p class="subtitle">Round 2: Pick Your Top 5</p>
+    </header>
+
+    <div class="container">
+        <!-- Config Section (for organizer) -->
+        <div class="config-section" id="configSection">
+            <h2>Setup (Organizer Only)</h2>
+            <p>Paste the finalist config from the Round 1 tally page:</p>
+            <div class="config-row">
+                <input type="text" id="configInput" placeholder='e.g. [22,25,5,19,2,35,28,21,3,44,11,24,7,18,37,36]'>
+                <button class="btn" onclick="loadConfig()">Load</button>
+            </div>
+        </div>
+
+        <!-- Intro Screen -->
+        <div class="intro" id="introScreen" style="display: none;">
+            <h2>Final Round!</h2>
+            <p>16 artworks made it through. Now pick your <strong>Top 5</strong> in order.</p>
+            <p>Your #1 pick gets 5 points, #2 gets 4 points, and so on.</p>
+
+            <input type="text" class="name-input" id="voterName" placeholder="Your name" maxlength="20">
+            <br>
+            <button class="btn" onclick="startVoting()">Start Voting</button>
+        </div>
+
+        <!-- Voting Section -->
+        <div class="voting-section" id="votingSection">
+            <div class="picks-display">
+                <div class="picks-header">
+                    <h3>Your Top 5</h3>
+                    <span class="subtitle" id="picksCount">0 / 5 selected</span>
+                </div>
+                <div class="picks-slots" id="picksSlots">
+                    <div class="pick-slot" data-rank="1">
+                        <span class="rank">1</span>
+                        <span class="points">5 pts</span>
+                    </div>
+                    <div class="pick-slot" data-rank="2">
+                        <span class="rank">2</span>
+                        <span class="points">4 pts</span>
+                    </div>
+                    <div class="pick-slot" data-rank="3">
+                        <span class="rank">3</span>
+                        <span class="points">3 pts</span>
+                    </div>
+                    <div class="pick-slot" data-rank="4">
+                        <span class="rank">4</span>
+                        <span class="points">2 pts</span>
+                    </div>
+                    <div class="pick-slot" data-rank="5">
+                        <span class="rank">5</span>
+                        <span class="points">1 pt</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-section">
+                <h3>Click artworks in order of preference (1st, 2nd, 3rd...)</h3>
+                <div class="gallery" id="gallery"></div>
+            </div>
+
+            <div class="submit-section">
+                <button class="btn" id="submitBtn" onclick="submitVotes()" disabled>Submit Top 5</button>
+                <button class="btn secondary" onclick="resetPicks()">Reset Picks</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-section" id="resultsSection">
+            <h2>Votes Submitted!</h2>
+            <p class="results-stats" id="resultsStats"></p>
+
+            <div class="your-picks" id="yourPicks"></div>
+
+            <div class="code-container">
+                <p class="code-label">Your voting code (send this to the organizer):</p>
+                <div class="code-box" id="codeBox"></div>
+            </div>
+
+            <button class="btn" onclick="copyCode()">Copy Code</button>
+            <button class="btn secondary" onclick="restart()">Vote Again</button>
+
+            <p class="copied-msg" id="copiedMsg">Copied to clipboard!</p>
+        </div>
+    </div>
+
+    <script>
+        // Image extensions
+        const imageExtensions = {
+            1: 'png', 21: 'png', 22: 'png', 23: 'png', 24: 'png', 25: 'png',
+            26: 'png', 27: 'png', 28: 'png', 29: 'png', 30: 'png', 31: 'png',
+            32: 'png', 35: 'png', 42: 'png', 43: 'png'
+        };
+
+        function getImageFilename(id) {
+            const ext = imageExtensions[id] || 'jpg';
+            return `images/art${String(id).padStart(2, '0')}.${ext}`;
+        }
+
+        // State
+        let finalists = [];
+        let picks = []; // Array of art IDs in order of selection
+        let voterName = '';
+
+        function loadConfig() {
+            const input = document.getElementById('configInput').value.trim();
+            try {
+                const config = JSON.parse(input);
+                if (Array.isArray(config) && config.length > 0) {
+                    finalists = config;
+                    document.getElementById('configSection').style.display = 'none';
+                    document.getElementById('introScreen').style.display = 'block';
+                } else {
+                    alert('Invalid config format');
+                }
+            } catch (e) {
+                alert('Invalid JSON. Please paste the config from the tally page.');
+            }
+        }
+
+        function startVoting() {
+            voterName = document.getElementById('voterName').value.trim() || 'Anonymous';
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('votingSection').classList.add('show');
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = finalists.map(id => `
+                <div class="art-card" data-id="${id}" onclick="selectArt(${id})">
+                    <img src="${getImageFilename(id)}" alt="Art #${id}">
+                    <div class="art-card-info">
+                        <span class="art-card-id">Art #${id}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectArt(id) {
+            if (picks.includes(id) || picks.length >= 5) return;
+
+            picks.push(id);
+            updatePicksDisplay();
+            updateGallery();
+        }
+
+        function removePick(rank) {
+            picks.splice(rank - 1, 1);
+            updatePicksDisplay();
+            updateGallery();
+        }
+
+        function updatePicksDisplay() {
+            const slots = document.querySelectorAll('.pick-slot');
+            slots.forEach((slot, i) => {
+                const rank = i + 1;
+                const artId = picks[i];
+
+                if (artId) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <span class="rank">${rank}</span>
+                        <img src="${getImageFilename(artId)}" alt="Art #${artId}">
+                        <button class="remove-pick" onclick="removePick(${rank})">✕</button>
+                    `;
+                } else {
+                    slot.classList.remove('filled');
+                    slot.innerHTML = `
+                        <span class="rank">${rank}</span>
+                        <span class="points">${6 - rank} pt${rank < 5 ? 's' : ''}</span>
+                    `;
+                }
+            });
+
+            document.getElementById('picksCount').textContent = `${picks.length} / 5 selected`;
+            document.getElementById('submitBtn').disabled = picks.length !== 5;
+        }
+
+        function updateGallery() {
+            document.querySelectorAll('.art-card').forEach(card => {
+                const id = parseInt(card.dataset.id);
+                if (picks.includes(id)) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        function resetPicks() {
+            picks = [];
+            updatePicksDisplay();
+            updateGallery();
+        }
+
+        function submitVotes() {
+            if (picks.length !== 5) return;
+
+            document.getElementById('votingSection').classList.remove('show');
+            document.getElementById('resultsSection').classList.add('show');
+
+            document.getElementById('resultsStats').textContent = `${voterName}'s Top 5`;
+
+            // Show picks
+            const yourPicks = document.getElementById('yourPicks');
+            yourPicks.innerHTML = picks.map((id, i) => `
+                <div class="pick-item">
+                    <img src="${getImageFilename(id)}" alt="Art #${id}">
+                    <div class="label">#${i + 1} (${5 - i} pts)</div>
+                </div>
+            `).join('');
+
+            // Generate code
+            const data = {
+                v: 2, // version 2 for round 2
+                n: voterName,
+                p: picks // picks in order
+            };
+
+            const code = btoa(JSON.stringify(data));
+            document.getElementById('codeBox').textContent = code;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeBox').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const msg = document.getElementById('copiedMsg');
+                msg.classList.add('show');
+                setTimeout(() => msg.classList.remove('show'), 2000);
+            });
+        }
+
+        function restart() {
+            picks = [];
+            document.getElementById('resultsSection').classList.remove('show');
+            document.getElementById('introScreen').style.display = 'block';
+            updatePicksDisplay();
+            updateGallery();
+        }
+
+        // Check for config in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const configParam = urlParams.get('config');
+        if (configParam) {
+            try {
+                finalists = JSON.parse(decodeURIComponent(configParam));
+                document.getElementById('configSection').style.display = 'none';
+                document.getElementById('introScreen').style.display = 'block';
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Vote - Tally Round 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1a1a1a;
+            --card: #252525;
+            --accent: #c9a55a;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --danger: #e74c3c;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .input-section {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-section h2 {
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .code-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .code-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .code-row label {
+            width: 80px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .code-row input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: var(--text);
+            padding: 10px 15px;
+            font-size: 0.85rem;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .code-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .code-row input.valid {
+            border-color: var(--success);
+        }
+
+        .code-row input.invalid {
+            border-color: var(--danger);
+        }
+
+        .code-row .status {
+            width: 24px;
+            text-align: center;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(201, 165, 90, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .actions {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .results-header h2 {
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 1.3rem;
+        }
+
+        .voter-summary {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .voter-summary h3 {
+            color: var(--accent);
+            font-weight: 400;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .voter-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .voter-tag {
+            background: #333;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .voter-tag span {
+            color: var(--accent);
+            margin-left: 5px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .art-card {
+            background: var(--card);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .art-card.finalist {
+            border: 2px solid var(--accent);
+        }
+
+        .art-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            background: #1a1a1a;
+        }
+
+        .art-card-info {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .art-card-id {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .art-card-votes {
+            background: var(--accent);
+            color: var(--bg);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .art-card-rank {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--accent);
+            color: var(--bg);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 30px 0;
+        }
+
+        .eliminated-section h3 {
+            color: var(--text-dim);
+            font-weight: 400;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .eliminated-section .art-card {
+            opacity: 0.6;
+        }
+
+        .round2-config {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .round2-config h3 {
+            color: var(--accent);
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .round2-config p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .config-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+            color: var(--text);
+        }
+
+        @media (max-width: 600px) {
+            .code-row {
+                flex-wrap: wrap;
+            }
+            .code-row label {
+                width: 100%;
+            }
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ART VOTE TALLY</h1>
+        <p class="subtitle">Round 1 Results</p>
+    </header>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>Paste Voter Codes</h2>
+            <div class="code-inputs" id="codeInputs">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" onclick="tallyVotes()" id="tallyBtn">Tally Votes</button>
+            <button class="btn secondary" onclick="clearAll()">Clear All</button>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="voter-summary">
+                <h3>Voters</h3>
+                <div class="voter-list" id="voterList"></div>
+            </div>
+
+            <div class="results-header">
+                <h2>Top 16 Finalists</h2>
+                <span class="subtitle" id="finalistNote"></span>
+            </div>
+
+            <div class="gallery" id="finalistsGallery"></div>
+
+            <div class="round2-config">
+                <h3>Round 2 Config</h3>
+                <p>Copy this and paste it into round2.html to set up the final vote:</p>
+                <div class="config-box" id="round2Config"></div>
+                <br>
+                <button class="btn" onclick="copyConfig()">Copy Config</button>
+                <span class="copied-msg" id="copiedMsg" style="color: var(--success); margin-left: 10px; opacity: 0;">Copied!</span>
+            </div>
+
+            <hr class="divider">
+
+            <div class="eliminated-section">
+                <h3>Eliminated</h3>
+                <div class="gallery" id="eliminatedGallery"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_ARTWORKS = 47;
+        const FINALIST_COUNT = 16;
+        const IMAGE_PATH = 'images/';
+
+        // Image extensions (same as voting page)
+        const imageExtensions = {
+            1: 'png', 21: 'png', 22: 'png', 23: 'png', 24: 'png', 25: 'png',
+            26: 'png', 27: 'png', 28: 'png', 29: 'png', 30: 'png', 31: 'png',
+            32: 'png', 35: 'png', 42: 'png', 43: 'png'
+        };
+
+        function getImageFilename(id) {
+            const ext = imageExtensions[id] || 'jpg';
+            return `art${String(id).padStart(2, '0')}.${ext}`;
+        }
+
+        // Generate input fields
+        const NUM_VOTERS = 9;
+        const codeInputs = document.getElementById('codeInputs');
+
+        for (let i = 1; i <= NUM_VOTERS; i++) {
+            const row = document.createElement('div');
+            row.className = 'code-row';
+            row.innerHTML = `
+                <label>Voter ${i}:</label>
+                <input type="text" id="code${i}" placeholder="Paste code here..." oninput="validateCode(this)">
+                <span class="status" id="status${i}"></span>
+            `;
+            codeInputs.appendChild(row);
+        }
+
+        function validateCode(input) {
+            const status = input.nextElementSibling;
+            if (!input.value.trim()) {
+                input.classList.remove('valid', 'invalid');
+                status.textContent = '';
+                return null;
+            }
+
+            try {
+                const data = JSON.parse(atob(input.value.trim()));
+                if (data.v === 1 && data.n && Array.isArray(data.a)) {
+                    input.classList.remove('invalid');
+                    input.classList.add('valid');
+                    status.textContent = '✓';
+                    status.style.color = 'var(--success)';
+                    return data;
+                }
+            } catch (e) {}
+
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+            status.textContent = '✕';
+            status.style.color = 'var(--danger)';
+            return null;
+        }
+
+        function tallyVotes() {
+            const voters = [];
+            const voteCounts = {};
+
+            // Initialize vote counts
+            for (let i = 1; i <= TOTAL_ARTWORKS; i++) {
+                voteCounts[i] = 0;
+            }
+
+            // Collect valid votes
+            for (let i = 1; i <= NUM_VOTERS; i++) {
+                const input = document.getElementById(`code${i}`);
+                const data = validateCode(input);
+                if (data) {
+                    voters.push({
+                        name: data.n,
+                        approvedCount: data.a.length
+                    });
+                    data.a.forEach(artId => {
+                        if (voteCounts.hasOwnProperty(artId)) {
+                            voteCounts[artId]++;
+                        }
+                    });
+                }
+            }
+
+            if (voters.length === 0) {
+                alert('Please enter at least one valid code.');
+                return;
+            }
+
+            // Sort by votes
+            const sorted = Object.entries(voteCounts)
+                .map(([id, votes]) => ({ id: parseInt(id), votes }))
+                .sort((a, b) => b.votes - a.votes);
+
+            const finalists = sorted.slice(0, FINALIST_COUNT);
+            const eliminated = sorted.slice(FINALIST_COUNT);
+
+            // Display voters
+            const voterList = document.getElementById('voterList');
+            voterList.innerHTML = voters.map(v =>
+                `<div class="voter-tag">${v.name}<span>(${v.approvedCount})</span></div>`
+            ).join('');
+
+            // Display finalists
+            const finalistsGallery = document.getElementById('finalistsGallery');
+            finalistsGallery.innerHTML = finalists.map((art, i) => `
+                <div class="art-card finalist">
+                    <span class="art-card-rank">${i + 1}</span>
+                    <img src="${IMAGE_PATH}${getImageFilename(art.id)}" alt="Art #${art.id}">
+                    <div class="art-card-info">
+                        <span class="art-card-id">Art #${art.id}</span>
+                        <span class="art-card-votes">${art.votes} vote${art.votes !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('finalistNote').textContent =
+                `${voters.length} voters · Top ${FINALIST_COUNT} advance to Round 2`;
+
+            // Display eliminated
+            const eliminatedGallery = document.getElementById('eliminatedGallery');
+            eliminatedGallery.innerHTML = eliminated.map(art => `
+                <div class="art-card">
+                    <img src="${IMAGE_PATH}${getImageFilename(art.id)}" alt="Art #${art.id}">
+                    <div class="art-card-info">
+                        <span class="art-card-id">Art #${art.id}</span>
+                        <span class="art-card-votes">${art.votes}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Generate Round 2 config
+            const config = finalists.map(f => f.id);
+            document.getElementById('round2Config').textContent = JSON.stringify(config);
+
+            // Show results
+            document.getElementById('resultsSection').classList.add('show');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyConfig() {
+            const config = document.getElementById('round2Config').textContent;
+            navigator.clipboard.writeText(config).then(() => {
+                const msg = document.getElementById('copiedMsg');
+                msg.style.opacity = '1';
+                setTimeout(() => msg.style.opacity = '0', 2000);
+            });
+        }
+
+        function clearAll() {
+            for (let i = 1; i <= NUM_VOTERS; i++) {
+                const input = document.getElementById(`code${i}`);
+                input.value = '';
+                input.classList.remove('valid', 'invalid');
+                document.getElementById(`status${i}`).textContent = '';
+            }
+            document.getElementById('resultsSection').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

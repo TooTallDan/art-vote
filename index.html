@@ -83,6 +83,7 @@
             max-width: 400px;
             height: 70vh;
             max-height: 500px;
+            margin: 0 auto;
         }
 
         .card {
@@ -331,6 +332,39 @@
             }
             .keyboard-hint {
                 display: none;
+            }
+        }
+
+        /* Desktop - bigger card, centered */
+        @media (min-width: 768px) {
+            .container {
+                height: calc(100vh - 120px);
+            }
+
+            #votingScreen {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .card-container {
+                max-width: 550px;
+                max-height: 70vh;
+                height: 70vh;
+            }
+
+            .card-image {
+                height: 80%;
+            }
+
+            .swipe-hint {
+                max-width: 550px;
+                margin: 10px auto 0;
+            }
+
+            .controls {
+                margin-top: 15px;
             }
         }
 

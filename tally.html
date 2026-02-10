@@ -326,9 +326,44 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        .floating-nav {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            background: rgba(37, 37, 37, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px;
+            z-index: 9999;
+            font-size: 0.8rem;
+        }
+
+        .floating-nav a {
+            text-decoration: none;
+            color: var(--text-dim);
+            padding: 6px 14px;
+            border-radius: 16px;
+            transition: all 0.2s;
+        }
+
+        .floating-nav a:hover {
+            color: var(--text);
+        }
+
+        .floating-nav a.active {
+            background: var(--accent);
+            color: var(--bg);
+        }
     </style>
 </head>
 <body>
+    <nav class="floating-nav">
+        <a href="https://ericdaniel.co" target="_top">Home</a>
+        <a href="https://ericdaniel.co/vibe/art-finder" target="_top" class="active">Vibe</a>
+    </nav>
+
     <header>
         <h1>ART VOTE TALLY</h1>
         <p class="subtitle">Round 1 Results</p>

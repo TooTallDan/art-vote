@@ -24,6 +24,10 @@
             --bronze: #cd7f32;
         }
 
+        html {
+            background: var(--bg);
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
@@ -902,6 +906,20 @@
             }
             document.getElementById('resultsSection').classList.remove('show');
         }
+    </script>
+    <script>
+        (function() {
+            var nav = document.querySelector('.floating-nav');
+            var h1 = document.querySelector('h1');
+            if (!nav || !h1) return;
+            function align() {
+                var r = h1.getBoundingClientRect();
+                nav.style.top = (r.top + r.height / 2) + 'px';
+                nav.style.transform = 'translateY(-50%)';
+            }
+            align();
+            window.addEventListener('resize', align);
+        })();
     </script>
 </body>
 </html>

@@ -29,13 +29,9 @@
         }
 
         header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: hsla(0, 0%, 7.3%, 0.85);
-            backdrop-filter: blur(40px);
+            background: var(--bg);
             padding: 0.5rem 5%;
-            border-bottom: 1px solid #363636;
+            border-bottom: 1px solid #333;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -51,7 +47,7 @@
             font-size: 2rem;
             font-weight: 600;
             letter-spacing: 2px;
-            color: var(--text);
+            color: var(--accent);
             text-transform: uppercase;
         }
 
@@ -344,11 +340,16 @@
             }
         }
         .floating-nav {
+            position: fixed;
+            top: 16px;
+            right: 5%;
             display: flex;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(37, 37, 37, 0.85);
+            backdrop-filter: blur(10px);
             border-radius: 100rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
             padding: 4px;
+            z-index: 9999;
             font-size: 0.85rem;
             font-weight: 500;
         }
@@ -372,15 +373,16 @@
     </style>
 </head>
 <body>
+    <nav class="floating-nav">
+        <a href="https://ericdaniel.co" target="_top">Home</a>
+        <a href="https://ericdaniel.co/vibe/art-finder" target="_top" class="active">Vibe</a>
+    </nav>
+
     <header>
         <div class="header-left">
             <h1>Art Vote</h1>
             <p class="subtitle">R1 Tally</p>
         </div>
-        <nav class="floating-nav">
-            <a href="https://ericdaniel.co" target="_top">Home</a>
-            <a href="https://ericdaniel.co/vibe/art-finder" target="_top" class="active">Vibe</a>
-        </nav>
     </header>
 
     <div class="container">

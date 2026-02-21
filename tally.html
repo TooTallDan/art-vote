@@ -417,11 +417,11 @@
             <div class="gallery" id="finalistsGallery"></div>
 
             <div class="round2-config">
-                <h3>Round 2 Config</h3>
-                <p>Copy this and paste it into round2.html to set up the final vote:</p>
-                <div class="config-box" id="round2Config"></div>
+                <h3>Round 2 Link</h3>
+                <p>Send this link to open Round 2 with finalists pre-loaded:</p>
+                <div class="config-box" id="round2ShareUrl" style="color: var(--accent);"></div>
                 <br>
-                <button class="btn" onclick="copyConfig()">Copy Config</button>
+                <button class="btn" onclick="copyLink()">Copy Link</button>
                 <span class="copied-msg" id="copiedMsg" style="color: var(--success); margin-left: 10px; opacity: 0;">Copied!</span>
             </div>
 
@@ -565,18 +565,21 @@
                 </div>
             `).join('');
 
-            // Generate Round 2 config
+            // Generate Round 2 config and shareable link
             const config = finalists.map(f => f.id);
             document.getElementById('round2Config').textContent = JSON.stringify(config);
+            const shareUrl = new URL('round2.html', window.location.href);
+            shareUrl.hash = config.join(',');
+            document.getElementById('round2ShareUrl').textContent = shareUrl.toString();
 
             // Show results
             document.getElementById('resultsSection').classList.add('show');
             document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function copyConfig() {
-            const config = document.getElementById('round2Config').textContent;
-            navigator.clipboard.writeText(config).then(() => {
+        function copyLink() {
+            const url = document.getElementById('round2ShareUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
                 const msg = document.getElementById('copiedMsg');
                 msg.style.opacity = '1';
                 setTimeout(() => msg.style.opacity = '0', 2000);

@@ -77,49 +77,7 @@
             padding: 20px;
         }
 
-        /* Config section */
-        .config-section {
-            background: var(--card);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .config-section h2 {
-            color: var(--accent);
-            font-weight: 400;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .config-section p {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-bottom: 10px;
-        }
-
-        .config-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .config-row input {
-            flex: 1;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: var(--text);
-            padding: 10px 15px;
-            font-size: 0.85rem;
-            border-radius: 5px;
-            font-family: monospace;
-        }
-
-        .config-row input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .btn {
+.btn {
             background: var(--accent);
             color: var(--bg);
             border: none;
@@ -500,16 +458,6 @@
     </header>
 
     <div class="container">
-        <!-- Config Section (for organizer) -->
-        <div class="config-section" id="configSection">
-            <h2>Setup (Organizer Only)</h2>
-            <p>Paste the finalist config from the Round 1 tally page:</p>
-            <div class="config-row">
-                <input type="text" id="configInput" placeholder='e.g. [22,25,5,19,2,35,28,21,3,44,11,24,7,18,37,36]'>
-                <button class="btn" onclick="loadConfig()">Load</button>
-            </div>
-        </div>
-
         <!-- Intro Screen -->
         <div class="intro" id="introScreen" style="display: none;">
             <h2>Final Round!</h2>
@@ -600,23 +548,7 @@
         let picks = []; // Array of art IDs in order of selection
         let voterName = '';
 
-        function loadConfig() {
-            const input = document.getElementById('configInput').value.trim();
-            try {
-                const config = JSON.parse(input);
-                if (Array.isArray(config) && config.length > 0) {
-                    finalists = config;
-                    document.getElementById('configSection').style.display = 'none';
-                    document.getElementById('introScreen').style.display = 'block';
-                } else {
-                    alert('Invalid config format');
-                }
-            } catch (e) {
-                alert('Invalid JSON. Please paste the config from the tally page.');
-            }
-        }
-
-        function startVoting() {
+function startVoting() {
             voterName = document.getElementById('voterName').value.trim() || 'Anonymous';
             document.getElementById('introScreen').style.display = 'none';
             document.getElementById('votingSection').classList.add('show');
@@ -737,15 +669,14 @@
             updateGallery();
         }
 
-        // Check for config in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const configParam = urlParams.get('config');
-        if (configParam) {
-            try {
-                finalists = JSON.parse(decodeURIComponent(configParam));
-                document.getElementById('configSection').style.display = 'none';
+        // Load finalists from URL hash (e.g. round2.html#3,5,11,22,...)
+        const hash = window.location.hash.slice(1);
+        if (hash) {
+            const ids = hash.split(',').map(Number).filter(n => Number.isInteger(n) && n > 0);
+            if (ids.length > 0) {
+                finalists = ids;
                 document.getElementById('introScreen').style.display = 'block';
-            } catch (e) {}
+            }
         }
     </script>
 </body>
